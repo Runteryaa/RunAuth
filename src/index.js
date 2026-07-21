@@ -79,11 +79,11 @@ export default {
         const authCode = "ac_" + crypto.randomUUID().replace(/-/g, "");
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 mins
 
-        // Store session / auth code
+        // Store session / auth code (Expires in 10 minutes)
         await dbQuery(
           env,
-          "INSERT INTO runauth_sessions (id, user_id, expires_at) VALUES (:1, :2, TO_TIMESTAMP(:3, 'YYYY-MM-DD\"T\"HH24:MI:SS.FF3\"Z\"'))",
-          [authCode, userId, expiresAt]
+          "INSERT INTO runauth_sessions (id, user_id, expires_at) VALUES (:1, :2, SYSTIMESTAMP + INTERVAL '10' MINUTE)",
+          [authCode, userId]
         );
 
         const targetRedirect = `${redirectUri}?code=${authCode}&state=${encodeURIComponent(state)}`;
@@ -119,8 +119,8 @@ export default {
 
         await dbQuery(
           env,
-          "INSERT INTO runauth_sessions (id, user_id, expires_at) VALUES (:1, :2, TO_TIMESTAMP(:3, 'YYYY-MM-DD\"T\"HH24:MI:SS.FF3\"Z\"'))",
-          [authCode, userId, expiresAt]
+          "INSERT INTO runauth_sessions (id, user_id, expires_at) VALUES (:1, :2, SYSTIMESTAMP + INTERVAL '10' MINUTE)",
+          [authCode, userId]
         );
 
         const targetRedirect = `${redirectUri}?code=${authCode}&state=${encodeURIComponent(state)}`;
