@@ -1,9 +1,8 @@
 name = "runauth"
-main = "src/index.js"
+main = "worker.js"
 compatibility_date = "2024-09-23"
 
 [vars]
 ORDS_URL = "https://GB0ABB62E885E33-RUNAUTH.adb.eu-frankfurt-1.oraclecloudapps.com/ords/admin/_/sql"
 ORDS_USER = "admin"
 JWT_SECRET = "runauth_super_secret_jwt_key_2026"
-# Note: Set ORDS_PASSWORD via wrangler secret put ORDS_PASSWORD in production
