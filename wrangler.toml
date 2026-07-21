@@ -6,4 +6,5 @@ account_id = "12cde0e8ba64680cf3065c9c807a9364"
 [vars]
 ORDS_URL = "https://GB0ABB62E885E33-RUNAUTH.adb.eu-frankfurt-1.oraclecloudapps.com/ords/admin/_/sql"
 ORDS_USER = "admin"
+ORDS_PASSWORD = "Elmaadamadam31"
 JWT_SECRET = "runauth_super_secret_jwt_key_2026"
