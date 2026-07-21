@@ -1,0 +1,13 @@
+{
+  "name": "runauth",
+  "version": "1.0.0",
+  "description": "Centralized OAuth 2.0 / OIDC Identity Provider powered by Cloudflare Workers & Oracle Autonomous DB",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.109.2"
+  }
+}
