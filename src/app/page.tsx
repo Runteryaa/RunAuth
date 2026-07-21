@@ -8,19 +8,20 @@ export default function Home() {
   const [user, setUser] = useState<{ email: string; name?: string } | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('runauth_current_user');
-      if (saved) {
-        setUser(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    fetch('/api/proxy/oauth/userinfo', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.email) {
+          setUser({ email: data.email, name: data.name || data.email.split('@')[0] });
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('runauth_current_user');
+  const handleLogout = async () => {
+    await fetch('/api/proxy/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     setUser(null);
+    window.location.href = '/';
   };
 
   return (
@@ -98,7 +99,7 @@ export default function Home() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <Link href="/login?mode=login" className="btn-primary" style={{ padding: '16px', fontSize: '16px', borderRadius: '16px' }}>
+            <Link href="/login" className="btn-primary" style={{ padding: '16px', fontSize: '16px', borderRadius: '16px' }}>
               Giriş Yap <ArrowRight size={18} />
             </Link>
 

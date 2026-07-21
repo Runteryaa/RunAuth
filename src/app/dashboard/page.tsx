@@ -30,59 +30,59 @@ export default function Dashboard() {
   const [passwordError, setPasswordError] = useState('');
 
   // Connected Apps state
-  const [connectedApps, setConnectedApps] = useState([
-    {
-      id: 'practide',
-      name: 'PractiDE',
-      url: 'https://practide.dev',
-      icon: '📚',
-      connectedAt: '2026-07-21',
-      status: 'Aktif'
-    }
-  ]);
+  const [connectedApps, setConnectedApps] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('runauth_current_user');
-      if (saved) {
-        const u = JSON.parse(saved);
-        setUser(u);
-        setName(u.name || '');
-        setAvatar(u.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(u.email || 'user')}`);
-      } else {
-        // Fallback default demo user if not logged in
-        const demoUser = {
-          email: 'runterya@example.com',
-          name: 'Runterya',
-          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Runterya',
-          created_at: '2026-07-21'
-        };
-        setUser(demoUser);
-        setName(demoUser.name);
-        setAvatar(demoUser.avatar);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    fetch('/api/proxy/oauth/userinfo', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.email) {
+          const u = {
+            email: data.email,
+            name: data.name || data.email.split('@')[0],
+            avatar: data.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(data.email)}`,
+            created_at: '2026-07-21'
+          };
+          setUser(u);
+          setName(u.name);
+          setAvatar(u.avatar);
+          if (data.connected_apps && Array.isArray(data.connected_apps)) {
+            setConnectedApps(data.connected_apps);
+          }
+          setLoading(false);
+        } else {
+          window.location.href = '/login';
+        }
+      })
+      .catch(() => {
+        window.location.href = '/login';
+      });
   }, []);
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
-    const updatedUser = {
-      ...user,
-      name,
-      avatar
-    };
-
-    setUser(updatedUser);
-    localStorage.setItem('runauth_current_user', JSON.stringify(updatedUser));
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2500);
+    try {
+      const res = await fetch('/api/proxy/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, avatar })
+      });
+      if (res.ok) {
+        const updatedUser = { ...user, name, avatar };
+        setUser(updatedUser);
+        setProfileSaved(true);
+        setTimeout(() => setProfileSaved(false), 2500);
+      }
+    } catch (err) {
+      // ignore
+    }
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError('');
 
@@ -96,20 +96,44 @@ export default function Dashboard() {
       return;
     }
 
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setPasswordSaved(true);
-    setTimeout(() => setPasswordSaved(false), 2500);
+    try {
+      const res = await fetch('/api/proxy/api/user/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setPasswordError(data.error || 'Şifre güncellenemedi.');
+        return;
+      }
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSaved(true);
+      setTimeout(() => setPasswordSaved(false), 2500);
+    } catch (err: any) {
+      setPasswordError('Bağlantı hatası oluştu.');
+    }
   };
 
-  const handleRevokeApp = (appId: string) => {
-    setConnectedApps(connectedApps.filter(app => app.id !== appId));
+  const handleRevokeApp = async (appId: string) => {
+    try {
+      await fetch(`/api/proxy/api/user/grants/${appId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      setConnectedApps(connectedApps.filter(app => app.id !== appId));
+    } catch (err) {
+      setConnectedApps(connectedApps.filter(app => app.id !== appId));
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('runauth_current_user');
-    router.push('/');
+  const handleLogout = async () => {
+    await fetch('/api/proxy/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    setUser(null);
+    window.location.href = '/';
   };
 
   const presetAvatars = [
@@ -119,6 +143,14 @@ export default function Dashboard() {
     'https://api.dicebear.com/7.x/bottts/svg?seed=Phoenix',
     'https://api.dicebear.com/7.x/bottts/svg?seed=Matrix'
   ];
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8' }}>
+        Oturum kontrol ediliyor...
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
