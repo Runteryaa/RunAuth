@@ -1,6 +1,7 @@
-name = "runauth"
+name = "runauth-worker"
 main = "worker.js"
 compatibility_date = "2024-09-23"
+account_id = "12cde0e8ba64680cf3065c9c807a9364"
 
 [vars]
 ORDS_URL = "https://GB0ABB62E885E33-RUNAUTH.adb.eu-frankfurt-1.oraclecloudapps.com/ords/admin/_/sql"
