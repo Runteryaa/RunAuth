@@ -13,8 +13,16 @@ export default {
     }
 
     try {
-      if (path === "/health") {
-        return jsonResponse({ status: "ok", service: "RunAuth Identity Provider", timestamp: new Date().toISOString() });
+      if (path === "/" || path === "/health") {
+        const issuer = `${url.protocol}//${url.host}`;
+        return jsonResponse({
+          status: "ok",
+          service: "RunAuth Identity Provider Gateway",
+          issuer,
+          login_portal: `${issuer}/oauth/authorize`,
+          oidc_config: `${issuer}/.well-known/openid-configuration`,
+          timestamp: new Date().toISOString()
+        });
       }
 
       if (path === "/.well-known/openid-configuration") {
