@@ -60,7 +60,9 @@ export default function LoginPage() {
       if (redirectUri) {
         const res = await fetch('/api/proxy/api/auth/authorize-session', {
           method: 'POST',
-          credentials: 'include'
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ clientId, redirectUri, state })
         });
         const data = await res.json();
         if (data.code) {

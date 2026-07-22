@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 const WORKER_URL = 'https://runauth-worker.runte.workers.dev';
 
 async function handleProxy(request: NextRequest, context: { params: Promise<{ path?: string[] }> }) {

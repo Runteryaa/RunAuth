@@ -173,6 +173,10 @@ export default {
           return jsonResponse({ error: "Invalid or expired session" }, 401);
         }
         const userId = sessions.items[0].USER_ID || sessions.items[0].user_id;
+        let body = {};
+        try { body = await request.json(); } catch(e) {}
+        if (body.clientId) await recordUserGrant(env, userId, body.clientId);
+
         const authCode = generateSecureToken("ra_code_");
         await dbQuery(
           env,
